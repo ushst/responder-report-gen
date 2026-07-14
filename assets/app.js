@@ -29,6 +29,19 @@ const MODULE_TYPES = {
 // Everything else carries a `hash`/`fullhash` value -> rendered as a "Hash     :" line.
 const PASSWORD_TYPES = new Set(['Basic','Cleartext','PLAIN-SASL','AUTH-PLAIN','AUTH-LOGIN']);
 
+// Responder's fullhash strings always lead with the bare username (no domain),
+// e.g. "jdoe::CONTOSO:...", even though the Username: line shows "CONTOSO\jdoe".
+function bareUsername(username){
+  const idx = username.indexOf('\\');
+  return idx !== -1 ? username.slice(idx+1) : username;
+}
+function syncUsernameIntoHash(entry, newUsername){
+  if(PASSWORD_TYPES.has(entry.type)) return;
+  const idx = entry.hash.indexOf(':');
+  if(idx === -1) return;
+  entry.hash = bareUsername(newUsername) + entry.hash.slice(idx);
+}
+
 let entries = [];
 let uid = 1;
 let saveTimer = null;
@@ -154,11 +167,21 @@ function renderEntries(){
       if(entry.showHost){
         card.appendChild(field('Hostname', textEl(entry.hostname, v=>{entry.hostname=v; renderPreview();})));
       }
-      card.appendChild(field('Username (напр. DOMAIN\\\\user)', textEl(entry.username, v=>{entry.username=v; renderPreview();})));
+      let valueFieldEl = null;
+      card.appendChild(field('Username (напр. DOMAIN\\\\user)', textEl(entry.username, v=>{
+        entry.username = v;
+        syncUsernameIntoHash(entry, v);
+        if(valueFieldEl && !PASSWORD_TYPES.has(entry.type)) valueFieldEl.value = entry.hash;
+        renderPreview();
+      })));
       if(PASSWORD_TYPES.has(entry.type)){
-        card.appendChild(field('Password (cleartext)', textEl(entry.password, v=>{entry.password=v; renderPreview();})));
+        const pwField = textEl(entry.password, v=>{entry.password=v; renderPreview();});
+        valueFieldEl = pwField;
+        card.appendChild(field('Password (cleartext)', pwField));
       } else {
-        card.appendChild(field('Hash (полная строка, как в логах Responder)', taEl(entry.hash, v=>{entry.hash=v; renderPreview();}, 3)));
+        const hashField = taEl(entry.hash, v=>{entry.hash=v; renderPreview();}, 3);
+        valueFieldEl = hashField;
+        card.appendChild(field('Hash', hashField));
       }
     } else if(entry.kind==='raw'){
       card.appendChild(cardHead('Произвольная строка', entry));

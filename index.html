@@ -12,7 +12,6 @@
 
 <div id="controls">
   <h1>Responder Report Gen</h1>
-  <p class="hint">Точный формат строк взят из исходников Responder (<code>utils.py</code>, <code>servers/*.py</code>, <code>poisoners/*.py</code>). Заполняй поля своими реальными данными (IP / hostname / username / хэш, которые у тебя сохранились в логах), справа — живой предпросмотр. Когда готово — сделай обычный скриншот области терминала (Win+Shift+S / Cmd+Shift+4 и т.п.).</p>
 
   <h2>Оформление</h2>
   <div class="row">
@@ -59,8 +58,6 @@
     <button class="add" id="btnImport">⭱ Импорт JSON</button>
     <input type="file" id="fileImport" accept="application/json" style="display:none">
   </div>
-
-  <div class="note" style="text-align:left;">Это визуальный реконструктор для отчётов (когда реальный скрин потерян, а данные из перехвата у тебя остались) — не запускает никакой перехват сам по себе. Данные хранятся только в этом браузере (localStorage), никуда не отправляются.</div>
 </div>
 
 <div id="stage">
@@ -77,7 +74,6 @@
     <button id="btnCopy">Скопировать как текст</button>
     <button id="btnReset">Очистить всё</button>
   </div>
-  <p class="note">Скриншот делай средствами ОС/браузера (выделение области экрана) — это надёжнее любого встроенного «сохранить как PNG» и не зависит от внешних библиотек.</p>
 </div>
 
 <script src="assets/app.js"></script>
