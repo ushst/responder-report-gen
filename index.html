@@ -42,13 +42,15 @@
 
   <hr>
   <h2>Строки вывода (по порядку)</h2>
-  <div id="entries" aria-live="polite"></div>
+  <div id="builderSection">
+    <div id="entries" aria-live="polite"></div>
 
-  <div class="addbar">
-    <button class="add" id="btnAddPoison">+ Poison-строка (LLMNR/NBT-NS/MDNS)</button>
-    <button class="add" id="btnAddCapture">+ Захват хэша / логина</button>
-    <button class="add" id="btnAddRaw">+ Произвольная строка</button>
-    <button class="add" id="btnAddBlank">+ Пустая строка</button>
+    <div class="addbar">
+      <button class="add" id="btnAddPoison">+ Poison-строка (LLMNR/NBT-NS/MDNS)</button>
+      <button class="add" id="btnAddCapture">+ Захват хэша / логина</button>
+      <button class="add" id="btnAddRaw">+ Произвольная строка</button>
+      <button class="add" id="btnAddBlank">+ Пустая строка</button>
+    </div>
   </div>
 
   <hr>
@@ -72,6 +74,7 @@
     <div id="resizeHandle" title="Потяни, чтобы изменить ширину (двойной клик — сбросить)"></div>
   </div>
   <div class="toolbar">
+    <button id="btnManualEdit">✎ Редактировать текст</button>
     <button id="btnCopy">Скопировать как текст</button>
     <button id="btnReset">Очистить всё</button>
   </div>

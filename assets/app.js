@@ -58,9 +58,11 @@ const MAX_TERM_WIDTH = 1800;
 function defaultSettings(){
   return { theme:'theme-kali', fontsize:'14', showBar:true,
     barTitle:'root@kali: ~/Responder — python3 Responder.py -I eth0',
-    termWidth: DEFAULT_TERM_WIDTH };
+    termWidth: DEFAULT_TERM_WIDTH,
+    manualEdit: false, manualHTML: '' };
 }
 let settings = defaultSettings();
+let manualEdit = false;
 
 function makePoison(){ return {id:uid++, kind:'poison', proto:'LLMNR', client:'192.168.1.50', name:'FILESRV01', service:'File Server'}; }
 function makeCapture(){
@@ -216,6 +218,11 @@ function line(...spans){
 
 function renderPreview(){
   const term = document.getElementById('terminal');
+  if(manualEdit){
+    applyChromeSettings();
+    scheduleSave();
+    return;
+  }
   term.innerHTML = '';
   entries.forEach(entry=>{
     if(entry.kind==='poison'){
@@ -254,6 +261,12 @@ function renderPreview(){
     }
   });
 
+  applyChromeSettings();
+  scheduleSave();
+}
+
+function applyChromeSettings(){
+  const term = document.getElementById('terminal');
   const termWrap = document.getElementById('termWrap');
   termWrap.className = settings.theme;
   termWrap.style.width = (settings.termWidth || DEFAULT_TERM_WIDTH) + 'px';
@@ -262,8 +275,6 @@ function renderPreview(){
   document.getElementById('termbar').style.display = settings.showBar? 'flex':'none';
   document.getElementById('termbarTitle').textContent = settings.barTitle;
   term.style.borderRadius = settings.showBar? '0 0 8px 8px' : '8px';
-
-  scheduleSave();
 }
 
 function render(){ renderEntries(); renderPreview(); saveState(); }
@@ -313,7 +324,8 @@ function fallbackCopy(text){
 }
 
 function copyText(e){
-  const text = Array.from(document.getElementById('terminal').children).map(d=>d.textContent).join('\n');
+  const term = document.getElementById('terminal');
+  const text = manualEdit ? term.innerText : Array.from(term.children).map(d=>d.textContent).join('\n');
   const btn = e.currentTarget;
   const flash = (label)=>{ const old = btn.textContent; btn.textContent = label; setTimeout(()=>btn.textContent=old, 1400); };
 
@@ -327,6 +339,13 @@ function copyText(e){
 }
 
 function resetAll(){
+  if(manualEdit){
+    if(!confirm('Очистить текст?')) return;
+    settings.manualHTML = '';
+    document.getElementById('terminal').innerHTML = '';
+    saveState();
+    return;
+  }
   if(!confirm('Удалить все строки?')) return;
   entries = [];
   render();
@@ -356,6 +375,7 @@ function importJSON(file){
       uid = Math.max(0, ...entries.map(e=>e.id||0)) + 1;
       applySettingsToControls();
       render();
+      syncManualModeUI();
     }catch(e){
       alert('Не удалось прочитать файл сценария: неверный формат JSON.');
     }
@@ -418,15 +438,67 @@ function wireResize(){
   });
 }
 
+function setManualMode(on, opts){
+  opts = opts || {};
+  manualEdit = on;
+  settings.manualEdit = on;
+  const term = document.getElementById('terminal');
+  const builder = document.getElementById('builderSection');
+  const btn = document.getElementById('btnManualEdit');
+
+  if(on){
+    if(!opts.restoring) settings.manualHTML = term.innerHTML;
+    term.innerHTML = settings.manualHTML;
+    term.setAttribute('contenteditable', 'true');
+    term.classList.add('editable');
+    builder.classList.add('locked');
+    btn.textContent = '✓ Готово';
+    btn.classList.add('active');
+    if(!opts.restoring) term.focus();
+  } else {
+    term.removeAttribute('contenteditable');
+    term.classList.remove('editable');
+    builder.classList.remove('locked');
+    btn.textContent = '✎ Редактировать текст';
+    btn.classList.remove('active');
+    renderPreview();
+  }
+  saveState();
+}
+
+function syncManualModeUI(){
+  if(settings.manualEdit) setManualMode(true, {restoring:true});
+  else if(manualEdit) setManualMode(false);
+}
+
+function wireManualEdit(){
+  const term = document.getElementById('terminal');
+  const btn = document.getElementById('btnManualEdit');
+  btn.addEventListener('click', ()=>{
+    if(!manualEdit){
+      setManualMode(true);
+    } else if(confirm('Вернуться к конструктору? Ручные правки в тексте будут заменены сгенерированным выводом.')){
+      setManualMode(false);
+    }
+  });
+  term.addEventListener('input', ()=>{
+    if(!manualEdit) return;
+    settings.manualHTML = term.innerHTML;
+    scheduleSave();
+  });
+}
+
 function init(){
   wireControls();
   wireResize();
+  wireManualEdit();
   const restored = loadState();
   if(!restored){
     entries = [makePoison(), makeCapture()];
   }
   applySettingsToControls();
   render();
+  syncManualModeUI();
 
   // Flush any pending debounced save immediately before the tab is closed/hidden/refreshed.
   window.addEventListener('beforeunload', saveState);
