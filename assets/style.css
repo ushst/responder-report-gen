@@ -1,0 +1,99 @@
+:root{
+  --bg:#1b1b1f; --panel:#232328; --panel2:#2a2a30; --border:#3a3a42;
+  --fg:#e6e6ea; --muted:#9a9aa5; --accent:#5b8cff;
+}
+*{box-sizing:border-box;}
+body{
+  margin:0; background:var(--bg); color:var(--fg);
+  font-family:-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;
+  display:flex; min-height:100vh;
+}
+#controls{
+  width:440px; min-width:380px; max-width:480px;
+  background:var(--panel); border-right:1px solid var(--border);
+  padding:18px; overflow-y:auto; height:100vh;
+}
+#stage{
+  flex:1; padding:28px; overflow:auto;
+  display:flex; flex-direction:column; align-items:center;
+}
+h1{font-size:16px; margin:0 0 4px;}
+.hint{color:var(--muted); font-size:12px; margin:0 0 16px; line-height:1.5;}
+h2{font-size:12px; text-transform:uppercase; letter-spacing:.06em; color:var(--muted); margin:18px 0 8px;}
+.row{display:flex; gap:8px; margin-bottom:8px;}
+.row > *{flex:1;}
+label{display:block; font-size:11px; color:var(--muted); margin-bottom:3px;}
+input[type=text], select, textarea{
+  width:100%; background:var(--panel2); border:1px solid var(--border);
+  color:var(--fg); border-radius:6px; padding:6px 8px; font-size:12.5px;
+  font-family:inherit;
+}
+textarea{resize:vertical; font-family:'Consolas',monospace; font-size:11.5px;}
+.field{margin-bottom:8px;}
+.chk{display:flex; align-items:center; gap:6px; font-size:12px; color:var(--fg); margin:6px 0;}
+.chk input{width:auto;}
+.card{
+  background:var(--panel2); border:1px solid var(--border); border-radius:8px;
+  padding:10px; margin-bottom:10px; position:relative;
+}
+.card-head{display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;}
+.card-head span{font-size:11px; font-weight:600; color:var(--accent); text-transform:uppercase;}
+.icon-btn{
+  background:none; border:1px solid var(--border); color:var(--muted);
+  border-radius:5px; width:22px; height:22px; cursor:pointer; font-size:12px; line-height:1;
+}
+.icon-btn:hover{color:#ff6b6b; border-color:#ff6b6b;}
+.dup-btn{background:none;border:1px solid var(--border);color:var(--muted);border-radius:5px;width:22px;height:22px;cursor:pointer;font-size:12px;}
+.dup-btn:hover{color:var(--accent); border-color:var(--accent);}
+.move-btn{background:none;border:1px solid var(--border);color:var(--muted);border-radius:5px;width:22px;height:22px;cursor:pointer;font-size:11px;}
+.move-btn:hover{color:var(--fg);}
+.addbar{display:flex; gap:6px; flex-wrap:wrap; margin-bottom:14px;}
+button.add{
+  background:var(--panel2); border:1px dashed var(--border); color:var(--fg);
+  border-radius:6px; padding:7px 10px; font-size:12px; cursor:pointer; flex:1; min-width:120px;
+}
+button.add:hover{border-color:var(--accent); color:var(--accent);}
+hr{border:none; border-top:1px solid var(--border); margin:16px 0;}
+
+/* terminal preview */
+#termWrap{max-width:100%;}
+#termbar{
+  display:flex; align-items:center; gap:6px; background:#3a3a3d; padding:7px 10px;
+  border-radius:8px 8px 0 0; width:900px; max-width:100%;
+}
+#termbar .dot{width:11px; height:11px; border-radius:50%;}
+#termbar .t{font-size:12px; color:#ccc; margin-left:8px;}
+#terminal{
+  width:900px; max-width:100%; min-height:120px;
+  padding:14px 16px; border-radius:0 0 8px 8px;
+  font-family:'Ubuntu Mono','DejaVu Sans Mono',Consolas,monospace;
+  font-size:14px; line-height:1.55; white-space:pre-wrap; word-break:break-all;
+}
+.theme-kali #terminal{ background:#141414; color:#d3d7cf; }
+.theme-kali #termbar{ background:#262626; }
+.theme-ubuntu #terminal{ background:#300a24; color:#eeeeec; }
+.theme-ubuntu #termbar{ background:#4b1236; }
+.theme-plain #terminal{ background:#000000; color:#c7c7c7; }
+.theme-plain #termbar{ background:#333; }
+
+.c-blue{color:#5c9cf5; font-weight:700;}
+.c-yellow{color:#c9a227;}
+.c-green{color:#8ae234; font-weight:700;}
+.c-red{color:#ef6a6a; font-weight:700;}
+.c-white{color:inherit;}
+.c-muted{color:#8a8a8a;}
+
+.toolbar{display:flex; gap:8px; margin-top:14px;}
+.toolbar button{
+  background:var(--panel2); border:1px solid var(--border); color:var(--fg);
+  padding:8px 14px; border-radius:6px; cursor:pointer; font-size:12.5px;
+}
+.toolbar button:hover{border-color:var(--accent); color:var(--accent);}
+.note{font-size:11.5px; color:var(--muted); margin-top:10px; max-width:900px; text-align:center;}
+::selection{background:#5b8cff55;}
+
+@media (max-width: 860px){
+  body{flex-direction:column;}
+  #controls{width:100%; max-width:none; height:auto; border-right:none; border-bottom:1px solid var(--border);}
+  #stage{padding:16px;}
+}

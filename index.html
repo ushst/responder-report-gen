@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Responder Report Gen — генератор скринов вывода Responder</title>
+<meta name="description" content="Локальный инструмент для реконструкции скриншотов вывода Responder (NTLMv1/NTLMv2, poison-строки LLMNR/NBT-NS/MDNS и др.) для пентест-отчётов — без повторного перехвата.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='18' fill='%23141414'/%3E%3Ctext x='50' y='66' font-size='58' text-anchor='middle' fill='%238ae234' font-family='monospace'%3E%3E_%3C/text%3E%3C/svg%3E">
+<link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+
+<div id="controls">
+  <h1>Responder Report Gen</h1>
+  <p class="hint">Точный формат строк взят из исходников Responder (<code>utils.py</code>, <code>servers/*.py</code>, <code>poisoners/*.py</code>). Заполняй поля своими реальными данными (IP / hostname / username / хэш, которые у тебя сохранились в логах), справа — живой предпросмотр. Когда готово — сделай обычный скриншот области терминала (Win+Shift+S / Cmd+Shift+4 и т.п.).</p>
+
+  <h2>Оформление</h2>
+  <div class="row">
+    <div>
+      <label for="theme">Тема терминала</label>
+      <select id="theme">
+        <option value="theme-kali" selected>Kali / чёрный (VTE)</option>
+        <option value="theme-ubuntu">Ubuntu (фиолетовый)</option>
+        <option value="theme-plain">Чистый чёрный</option>
+      </select>
+    </div>
+    <div>
+      <label for="fontsize">Размер шрифта</label>
+      <select id="fontsize">
+        <option value="12">12px</option>
+        <option value="13">13px</option>
+        <option value="14" selected>14px</option>
+        <option value="16">16px</option>
+        <option value="18">18px</option>
+      </select>
+    </div>
+  </div>
+  <label class="chk" for="showBar"><input type="checkbox" id="showBar" checked> показывать заголовок окна терминала</label>
+  <div class="field">
+    <label for="barTitle">Заголовок окна / команда запуска</label>
+    <input type="text" id="barTitle" value="root@kali: ~/Responder — python3 Responder.py -I eth0">
+  </div>
+
+  <hr>
+  <h2>Строки вывода (по порядку)</h2>
+  <div id="entries" aria-live="polite"></div>
+
+  <div class="addbar">
+    <button class="add" id="btnAddPoison">+ Poison-строка (LLMNR/NBT-NS/MDNS)</button>
+    <button class="add" id="btnAddCapture">+ Захват хэша / логина</button>
+    <button class="add" id="btnAddRaw">+ Произвольная строка</button>
+    <button class="add" id="btnAddBlank">+ Пустая строка</button>
+  </div>
+
+  <hr>
+  <h2>Сценарий</h2>
+  <div class="addbar">
+    <button class="add" id="btnExport">⭳ Экспорт JSON</button>
+    <button class="add" id="btnImport">⭱ Импорт JSON</button>
+    <input type="file" id="fileImport" accept="application/json" style="display:none">
+  </div>
+
+  <div class="note" style="text-align:left;">Это визуальный реконструктор для отчётов (когда реальный скрин потерян, а данные из перехвата у тебя остались) — не запускает никакой перехват сам по себе. Данные хранятся только в этом браузере (localStorage), никуда не отправляются.</div>
+</div>
+
+<div id="stage">
+  <div id="termWrap">
+    <div id="termbar">
+      <div class="dot" style="background:#ff5f57"></div>
+      <div class="dot" style="background:#febc2e"></div>
+      <div class="dot" style="background:#28c840"></div>
+      <div class="t" id="termbarTitle"></div>
+    </div>
+    <div id="terminal" role="log" aria-label="Предпросмотр вывода терминала"></div>
+  </div>
+  <div class="toolbar">
+    <button id="btnCopy">Скопировать как текст</button>
+    <button id="btnReset">Очистить всё</button>
+  </div>
+  <p class="note">Скриншот делай средствами ОС/браузера (выделение области экрана) — это надёжнее любого встроенного «сохранить как PNG» и не зависит от внешних библиотек.</p>
+</div>
+
+<script src="assets/app.js"></script>
+</body>
+</html>
