@@ -29,26 +29,36 @@ const MODULE_TYPES = {
 // Everything else carries a `hash`/`fullhash` value -> rendered as a "Hash     :" line.
 const PASSWORD_TYPES = new Set(['Basic','Cleartext','PLAIN-SASL','AUTH-PLAIN','AUTH-LOGIN']);
 
-// Responder's fullhash strings always lead with the bare username (no domain),
-// e.g. "jdoe::CONTOSO:...", even though the Username: line shows "CONTOSO\jdoe".
-function bareUsername(username){
-  const idx = username.indexOf('\\');
-  return idx !== -1 ? username.slice(idx+1) : username;
-}
+// Responder's fullhash strings follow "User::Domain:..." (bare username, then the
+// domain after the empty "::" field) — e.g. "jdoe::CONTOSO:...", even though the
+// Username: line itself shows "CONTOSO\jdoe". Split the "DOMAIN\user" input and
+// push each half into its matching slot in the hash string.
 function syncUsernameIntoHash(entry, newUsername){
   if(PASSWORD_TYPES.has(entry.type)) return;
-  const idx = entry.hash.indexOf(':');
-  if(idx === -1) return;
-  entry.hash = bareUsername(newUsername) + entry.hash.slice(idx);
+  if(entry.hash.indexOf(':') === -1) return;
+
+  const bsIdx = newUsername.indexOf('\\');
+  const bareUser = bsIdx !== -1 ? newUsername.slice(bsIdx+1) : newUsername;
+  const domain = bsIdx !== -1 ? newUsername.slice(0, bsIdx) : '';
+
+  const segs = entry.hash.split(':');
+  segs[0] = bareUser;
+  if(domain && segs.length >= 3 && segs[1] === '') segs[2] = domain;
+  entry.hash = segs.join(':');
 }
 
 let entries = [];
 let uid = 1;
 let saveTimer = null;
 
+const DEFAULT_TERM_WIDTH = 900;
+const MIN_TERM_WIDTH = 380;
+const MAX_TERM_WIDTH = 1800;
+
 function defaultSettings(){
   return { theme:'theme-kali', fontsize:'14', showBar:true,
-    barTitle:'root@kali: ~/Responder — python3 Responder.py -I eth0' };
+    barTitle:'root@kali: ~/Responder — python3 Responder.py -I eth0',
+    termWidth: DEFAULT_TERM_WIDTH };
 }
 let settings = defaultSettings();
 
@@ -244,7 +254,9 @@ function renderPreview(){
     }
   });
 
-  document.getElementById('termWrap').className = settings.theme;
+  const termWrap = document.getElementById('termWrap');
+  termWrap.className = settings.theme;
+  termWrap.style.width = (settings.termWidth || DEFAULT_TERM_WIDTH) + 'px';
   term.style.fontSize = settings.fontsize+'px';
 
   document.getElementById('termbar').style.display = settings.showBar? 'flex':'none';
@@ -373,8 +385,42 @@ function wireControls(){
   document.getElementById('barTitle').addEventListener('input', e=>{settings.barTitle=e.target.value; renderPreview();});
 }
 
+function wireResize(){
+  const handle = document.getElementById('resizeHandle');
+  const wrap = document.getElementById('termWrap');
+  let startX = 0, startWidth = 0, dragging = false;
+
+  handle.addEventListener('pointerdown', e=>{
+    dragging = true;
+    startX = e.clientX;
+    startWidth = wrap.getBoundingClientRect().width;
+    handle.classList.add('active');
+    handle.setPointerCapture(e.pointerId);
+  });
+  handle.addEventListener('pointermove', e=>{
+    if(!dragging) return;
+    const width = Math.max(MIN_TERM_WIDTH, Math.min(MAX_TERM_WIDTH, startWidth + (e.clientX - startX)));
+    settings.termWidth = Math.round(width);
+    wrap.style.width = settings.termWidth + 'px';
+  });
+  const stop = ()=>{
+    if(!dragging) return;
+    dragging = false;
+    handle.classList.remove('active');
+    saveState();
+  };
+  handle.addEventListener('pointerup', stop);
+  handle.addEventListener('pointercancel', stop);
+  handle.addEventListener('dblclick', ()=>{
+    settings.termWidth = DEFAULT_TERM_WIDTH;
+    wrap.style.width = DEFAULT_TERM_WIDTH + 'px';
+    saveState();
+  });
+}
+
 function init(){
   wireControls();
+  wireResize();
   const restored = loadState();
   if(!restored){
     entries = [makePoison(), makeCapture()];

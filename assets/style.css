@@ -56,19 +56,28 @@ button.add:hover{border-color:var(--accent); color:var(--accent);}
 hr{border:none; border-top:1px solid var(--border); margin:16px 0;}
 
 /* terminal preview */
-#termWrap{max-width:100%;}
+#termWrap{width:900px; max-width:96vw; position:relative;}
 #termbar{
   display:flex; align-items:center; gap:6px; background:#3a3a3d; padding:7px 10px;
-  border-radius:8px 8px 0 0; width:900px; max-width:100%;
+  border-radius:8px 8px 0 0; width:100%;
 }
 #termbar .dot{width:11px; height:11px; border-radius:50%;}
 #termbar .t{font-size:12px; color:#ccc; margin-left:8px;}
 #terminal{
-  width:900px; max-width:100%; min-height:120px;
+  width:100%; min-height:120px;
   padding:14px 16px; border-radius:0 0 8px 8px;
   font-family:'Ubuntu Mono','DejaVu Sans Mono',Consolas,monospace;
   font-size:14px; line-height:1.55; white-space:pre-wrap; word-break:break-all;
 }
+#resizeHandle{
+  position:absolute; top:0; right:-7px; width:14px; height:100%;
+  cursor:ew-resize; touch-action:none; z-index:5;
+}
+#resizeHandle::after{
+  content:''; position:absolute; top:50%; right:5px; transform:translateY(-50%);
+  width:3px; height:36px; border-radius:3px; background:var(--border);
+}
+#resizeHandle:hover::after, #resizeHandle.active::after{ background:var(--accent); }
 .theme-kali #terminal{ background:#141414; color:#d3d7cf; }
 .theme-kali #termbar{ background:#262626; }
 .theme-ubuntu #terminal{ background:#300a24; color:#eeeeec; }
