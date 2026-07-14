@@ -8,7 +8,7 @@ const MODULES = ["SMB","HTTP","HTTPS","MSSQL","LDAP","LDAPS","RDP","DCE-RPC","Pr
 
 // Per-module auth "type" values, verified against Responder's servers/*.py SaveToDb() calls.
 const MODULE_TYPES = {
-  'SMB':        ['NTLMv1-SSP','NTLMv2-SSP'],
+  'SMB':        ['NTLMv1-SSP','NTLMv2-SSP','NTLMv1','NTLMv2'],
   'HTTP':       ['NTLMv1','NTLMv2','Basic'],
   'HTTPS':      ['NTLMv1','NTLMv2','Basic'],
   'MSSQL':      ['NTLMv1','NTLMv2','Cleartext'],
